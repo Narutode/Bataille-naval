@@ -1,0 +1,257 @@
+from tkinter import *
+from random import *
+import tkinter as Tk
+root=Tk.Tk()
+
+root.title("Bataille Navalle")
+root.wm_minsize( height = 700,  width=1100)
+stuff=20*[0]
+def autour (i,j,n,seul,k):
+    global stuff
+    # i et j sont les indices du tableu
+    # si n=0 on va mettre un bateau a 2 cases, n=1 a trois cases
+    # si seul vaut 15 , la case chosie est libre,21 dans le cas du bateau a trois cases
+    # si k=1 on met un bateau horizontal
+    isole=0
+    if k==1:
+        for col in range(j-1,j+2):
+            for lig in range(i-(2+n),i+(3+n)):
+               if stuff[lig][col]==0:
+                  isole=isole+1
+        if isole==(15+6*n):
+            seul=True
+        return seul
+    if k==2:
+        for col in range(j-(2+n),j+(3+n)):
+            for lig in range(i-1,i+2):
+               if stuff[lig][col]==0:
+                  isole=isole+1
+        if isole==(15+6*n):
+            seul=True
+        return seul
+
+def sup(event):
+    global ligne,colonne,x,y,npp,nbb,gb,pb,clic,clicbateau
+#cette fonction est declenche qd l'utilisateur touche un bouton , c'est event
+    dict=event.widget.grid_info()
+#on extrait les donnees du bouton clique
+    colonne=int(dict.get('column'))
+    ligne=int(dict.get('row'))
+#on a obtenu ligne et colone en extrayant du dictionnaire
+    x=colonne
+    y=ligne
+
+    if stuff[x][y]==0:
+            event.widget.config( text = '       ' , bg ='blue')
+            clic=clic+1
+            # la case ne contient pas de bateau, elle a été joué , elle est donc bleue.
+    if stuff[x][y]==1:
+            print("touché")
+            clic=clic+1
+            clicbateau=clicbateau-1
+            event.widget.config( text = '       ' , bg ='red')
+
+#qd le bouton est clique , et q'un petit bateau est touché,alors il devient rouge
+            stuff[x][y]=3
+            if stuff[x-1][y]==3 or stuff[x+1][y]==3 or stuff[x][y-1]==3 or stuff[x][y+1]==3:
+                print("coulé")
+                nbb=nbb+1
+                texte1="il vous reste  "
+                texte2="  petit bateaux à trouver et  "
+                texte3="  grand bateaux à trouver  "
+                texte0=texte1+str(pb-nbb)+texte2+str(gb-npp)+texte3
+                lavel1=Label(root,text=texte0,font = ("Helvetica", 14), fg='black',bg='white')
+                lavel1.grid(row=5,column=20)
+            if pb-nbb==0 and gb-npp==0:
+                fenTop1 = Tk.Toplevel() #Créer une nouvelle fenêtre TopLevel
+                texte1=" Félicitation, Vous avez gagné,votre score: "
+                texte0=texte1+str(clicbateau-clic*5)
+                lavel1=Label(fenTop1,text=texte0, font = ("Helvetica", 16), fg='black',bg='white')
+                lavel1.grid(row=5,column=20)
+                btnnouveaujeu = Button(fenTop1,text="Rejouer",font="Arial 12",width =15,command =rejouer)
+                btnnouveaujeu.grid(row=6,column=20)
+                btnQuitter = Tk.Button(fenTop1, text="Quitter",font="Arial 12",width=15, command=quitter)
+                btnQuitter.grid(row=7,column=20)
+
+
+
+
+            return
+#on s'interesse maintenant au porte avion
+    if stuff[x][y]==2:
+            print("touché")
+            event.widget.config( text = '       ' , bg ='yellow')
+            clic=clic+1
+            clicbateau=clicbateau-1
+#qd le bouton est clique alors il devient jaune
+            stuff[x][y]=4
+# un bateau grand contient trois cases qu'il faut identifier.
+            j=0
+            if stuff[x-1][y]==4 :
+                j=j+1
+            if stuff[x+1][y]==4:
+                 j=j+1
+            if stuff[x][y-1]==4:
+                 j=j+1
+            if stuff[x][y+1]==4:
+                 j=j+1
+            if stuff[x+2][y]==4:
+                j=j+1
+            if stuff[x-2][y]==4:
+                j=j+1
+            if stuff[x][y+2]==4:
+                j=j+1
+            if stuff[x][y-2]==4:
+                j=j+1
+
+            if j==2:
+                print("coulé")
+                npp=npp+1
+                texte1="il vous reste   "
+                texte2="  petit bateaux à trouver et  "
+                texte3="  grand bateaux à trouver  "
+                texte0=texte1+str(pb-nbb)+texte2+str(gb-npp)+texte3
+                lavel1=Label(root,text=texte0,font = ("Helvetica", 14), fg='black',bg='white')
+                lavel1.grid(row=5,column=20)
+            if pb-nbb==0 and gb-npp==0:
+                rejouer()
+            return
+
+def rejouer():
+    global root,fenTop1
+    def blbl():
+
+        fenTop1.destroy() #Détruit la fenêtre
+        root.deiconify() #Remet la fenêtre principale
+        nouveauJeu()
+    def baba():
+        root.destroy()
+    fenTop1 = Tk.Toplevel() #Créer une nouvelle fenêtre TopLevel
+    texte1=" Félicitation, Vous avez gagné,votre score: "
+    texte0=texte1+str(clicbateau-clic*5)
+    lavel1=Label(fenTop1,text=texte0 ,font = ("Helvetica", 16), fg='black',bg='white')
+    lavel1.grid(row=5,column=20)
+    btnnouveaujeu = Button(fenTop1,text="Rejouer",font="Arial 12",width =15,command =blbl)
+    btnnouveaujeu.grid(row=6,column=20)
+    btnQuitter = Tk.Button(fenTop1, text="Quitter",font="Arial 12",width=15, command=baba)
+    btnQuitter.grid(row=7,column=20)
+
+def nouveauJeu():
+    global clic,pb,gb,npp,nbb,clicbateau
+    clic=0
+    pb=0
+    gb=0
+    nbb=0
+    npp=0
+    Jeu()
+    bateau()
+    clicbateau=1000
+
+
+
+def aide():
+    msg = Tk.Toplevel()
+    yexte=Label(msg,text =" Règles du jeu La bataille navale a pour but de faire couler tout les bateaux dans la grille et d'avoir plus de score possible", font = ("Helvetica", 16), fg='black',bg='white', anchor='center' ,wraplength = 500, height = 5,  width=60).pack()
+    yexte=Label(msg,text =" petit bateaux occupe 2 emplacements", font = ("Helvetica", 16), fg='black',bg='white', anchor='center' ,wraplength = 500, height = 5,  width=60).pack()
+    yexte=Label(msg,text ="  grande bateaux occupe 3 emplacements ", font = ("Helvetica", 16), fg='black',bg='white', anchor='center' ,wraplength = 500, height = 5,  width=60).pack()
+    yexte=Label(msg,text ="  score maximale=1000", font = ("Helvetica", 16), fg='black',bg='white', anchor='center' ,wraplength = 500, height = 5,  width=60).pack()
+def quitter():
+    global root
+    def oui():
+        print("Merci d'avoir jouer!")
+        root.destroy() #Détruit la fenêtre
+    def non():
+        print('Ok, ok je reste!')
+        fenTop.destroy() #Détruit la fenêtre
+        root.deiconify() #Remet la fenêtre principale
+    fenTop = Tk.Toplevel() #Créer une nouvelle fenêtre TopLevel
+
+    text1 = Label(fenTop, text=" voulez-vous quitter?", font = ("Helvetica", 16), fg='black',bg='white' ).pack()
+
+    btnOui =Tk.Button(fenTop, text="Oui", command=oui)
+    btnOui.pack()
+
+    btnNon = Tk.Button(fenTop, text="Non", command=non)
+    btnNon.pack()
+    btnNon2 = Tk.Button(fenTop, text="grille", command=affiche(stuff))
+    btnNon2.pack()
+
+def Jeu():
+    for j in range (2,18):
+        #cette partie permet de construire la grille
+        for i in range(2,18):
+            # a chaque case on lui donne un nom, nomij
+            if (i+j)%2==0:
+                nom = Button(root,bg="black",width=5,height=2,bd=1)
+                # on crée une case noire cad i+j est pair
+                nom.grid (row = i,column = j, sticky = "E", padx = 1,pady=1)
+                root.bind('<Button-1>', sup)
+                # quand on appuie sur le bouton gauche alors on declenche la fonction sup
+            else:
+                nom = Button (root,bg="white",width=5,height=2,bd=1)
+               # on cree une case blanche, cad i+j est impair
+                nom.grid (row = i,column = j, sticky = "E", padx = 1,pady=1)
+                root.bind('<Button-1>', sup)
+def affiche(stuff):
+    for j in range (2,18):
+        #cette partie permet de construire la grille
+        for i in range(2,18):
+            if stuff[j][i] !=0 :
+                nom = Button(root,bg="orange",width=5,height=2,bd=1)
+                # on crée une case noire cad i+j est pair
+                nom.grid (row = i,column = j, sticky = "E", padx = 1,pady=1)
+    return
+
+
+def bateau():
+    global pb,gb
+    for i in range(len(stuff)): stuff[i] =20 *[0]
+    for i in range (0,10):
+    # on associe ici de maniere aleatoire des petits bateaux de longueur 2
+    # on trouve les indices ii et jj
+
+        ii=randint(4,15)
+        jj=randint (4,15)
+        seul=False
+        if (ii+jj)%2==0 and autour(ii,jj,0,seul,1):
+
+                stuff [ii] [jj] =1
+                stuff [ii+1] [jj] =1
+                pb=pb+1
+
+        if (ii+jj)%2==1 and autour(ii,jj,0,seul,2):
+                stuff [ii] [jj] =1
+                stuff [ii] [jj+1] =1
+                pb=pb+1
+    for i in range (0,30):
+    # on associe ici de maniere aleatoire des grandes bateaux de longueur 3
+    # on trouve les indices ii et jj
+
+        ii=randint(4,15)
+        jj=randint (4,15)
+        seul=False
+        if (ii+jj)%2==0 and autour(ii,jj,1,seul,1):
+            stuff [ii] [jj] =2
+            stuff [ii+1] [jj] =2
+            stuff [ii+2] [jj] =2
+            gb=gb+1
+
+        if (ii+jj)%2==1 and autour(ii,jj,1,seul,2):
+            stuff [ii] [jj] =2
+            stuff [ii] [jj+1] =2
+            stuff [ii] [jj+2] =2
+            gb=gb+1
+
+menu = Menu(root)
+#sousmenu fait partie des bouton en haut de la fenêtre, tearoff permet qu'il ne puisse pas être déplaçable
+sousmenu = Menu (menu, tearoff=0)
+menu.add_cascade(label='Options',  menu=sousmenu)
+menu.add_command(label='Aide', command=aide)
+#ici il y a un deuxième bouton nouvelle partie dans le bouton 'Option'
+sousmenu.add_command(label="Nouvelle partie ", command=nouveauJeu)
+sousmenu.add_command(label="Quitter", command=quitter)
+root.config(menu = menu)
+
+root.mainloop()
+
+
